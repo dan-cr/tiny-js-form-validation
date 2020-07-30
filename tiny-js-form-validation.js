@@ -1,10 +1,10 @@
-(function(window) {
+(function (window) {
 
     // Default Validation Settings
     var defaults = {
         errors: {
             required: 'Please enter your %s',
-			alpha_numeric: '%s should only contact alphanumeric characters',
+            alpha_numeric: '%s should only contact alphanumeric characters',
             max_length: '%s must not exceed %s characters',
             min_length: '%s must be no less than %s characters',
             valid_email: 'Please enter a valid %s'
@@ -13,18 +13,18 @@
 
     // Validator Constructor
     function Validator(formId, fields) {
-		
-		// Outer context
-		var that = this;
+
+        // Outer context
+        var that = this;
 
         this.form = document.getElementById(formId);
         this.fields = fields;
         this.errors;
-		
-		// Validate form on submission
-        this.form.addEventListener('submit', function(event) {
-			
-			that.validateForm();
+
+        // Validate form on submission
+        this.form.addEventListener('submit', function (event) {
+
+            that.validateForm();
 
             // Prevent form submitting if errors exist
             if (that.errors.length) {
@@ -33,55 +33,55 @@
 
         });
     }
-    
+
     // Validates selected form
-	Validator.prototype.validateForm = function() {
-		
-		// Reset/Init errors
-		this.errors = [];
-		
-		for (var i = 0; i < this.fields.length; i++) {
-			
-			// Current field
-			let field = this.fields[i];
+    Validator.prototype.validateForm = function () {
 
-			// Element and rules
-			var element,
-				rules = {},
-				argument;
+        // Reset/Init errors
+        this.errors = [];
 
-			for (var prop in field) {
+        for (var i = 0; i < this.fields.length; i++) {
 
-				// Skip element if property is missing
-				if (!field[prop]) break;
+            // Current field
+            let field = this.fields[i];
 
-				if (prop == 'fieldName') { 
+            // Element and rules
+            var element,
+                rules = {},
+                argument;
+
+            for (var prop in field) {
+
+                // Skip element if property is missing
+                if (!field[prop]) break;
+
+                if (prop == 'fieldName') {
                     element = this.form.elements[field.fieldName];
-				} else if (prop == 'fieldRules') {
-					var ruleSet = field[prop].split('|');
-					for (var j = 0; j < ruleSet.length; j++) {
-						var rule = ruleSet[j];
-						var matches = rule.match(/\[(\d+)\]/);
-						var ruleArg = rule.replace(/\[\d*\]/, '');
-						if (matches) {
-							argument = matches[1];
-						}
-						rules[ruleArg] = argument;
-					}
-				}
-			}
+                } else if (prop == 'fieldRules') {
+                    var ruleSet = field[prop].split('|');
+                    for (var j = 0; j < ruleSet.length; j++) {
+                        var rule = ruleSet[j];
+                        var matches = rule.match(/\[(\d+)\]/);
+                        var ruleArg = rule.replace(/\[\d*\]/, '');
+                        if (matches) {
+                            argument = matches[1];
+                        }
+                        rules[ruleArg] = argument;
+                    }
+                }
+            }
 
-			// Validate an individual field
-			if (!this.validateField(element, rules)) {
-				break;
-			}
+            // Validate an individual field
+            if (!this.validateField(element, rules)) {
+                break;
+            }
         }
-        
-	}
+
+    }
 
     // Generate error message
-    Validator.prototype.substituteError = function(name, method, arg) {
-        
+    Validator.prototype.substituteError = function (name, method, arg) {
+
         // Retrieve the default error
         var errorMsg = defaults.errors[method];
 
@@ -97,14 +97,14 @@
     }
 
     // Generate error element
-    Validator.prototype.createError = function(field, error) {
+    Validator.prototype.createError = function (field, error) {
         var oldError = document.querySelector('.field-error');
         if (oldError) {
             oldError.remove();
         }
         if (field.type === 'checkbox' || field.type === 'radio') {
             field.classList.add('field-error-border')
-            field.onclick = function() {
+            field.onclick = function () {
                 field.classList.remove('field-error-border');
             }
         } else {
@@ -112,13 +112,13 @@
             var newErrorElementText = document.createTextNode(error);
             newErrorElement.classList.add('field-error');
             newErrorElement.appendChild(newErrorElementText);
-            field.parentNode.insertBefore( newErrorElement, field.nextSibling);
+            field.parentNode.insertBefore(newErrorElement, field.nextSibling);
         }
     }
 
-	// Validates a single field and returns a Boolean indicating whether the field is valid
-    Validator.prototype.validateField = function(field, methods) {
-        
+    // Validates a single field and returns a Boolean indicating whether the field is valid
+    Validator.prototype.validateField = function (field, methods) {
+
         // Use dataset name if set, else use name attribute of field
         var formattedName = field.dataset.name || field.name;
 
@@ -136,40 +136,40 @@
             }
         }
 
-		return true;
-		
+        return true;
+
     }
 
     // Field validation methods
     Validator.prototype.fieldValidators = {
 
         // Test if field is checked or not null/empty
-        required: function(field) {
+        required: function (field) {
             // Check if field is of type 'radio|checkbox', then test to see if it is checked.
             if (field.type === 'checkbox' || field.type === 'radio') {
                 return (field.checked === true);
             }
             return field.value !== '' && field.value !== undefined;
         },
-		
-		// Returns true if field contacts only alpha numerical characters
-		alpha_numeric: function(field) {
-			var alphaNumericRegex = /^\w+$/;
-			return alphaNumericRegex.test(field.value);
-		},
+
+        // Returns true if field contacts only alpha numerical characters
+        alpha_numeric: function (field) {
+            var alphaNumericRegex = /^\w+$/;
+            return alphaNumericRegex.test(field.value);
+        },
 
         // Test if field value is greater than min length.
-        min_length: function(field, minLen) {
+        min_length: function (field, minLen) {
             return field.value.length >= minLen;
-        }, 
+        },
 
         // Test if field value is less than max length.
-        max_length: function(field, maxLen) {
+        max_length: function (field, maxLen) {
             return field.value.length <= maxLen;
         },
 
         // Test if email field is in the correct format
-        valid_email: function(field) {
+        valid_email: function (field) {
             // This should suffice for most email validation needs
             var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(field.value);
